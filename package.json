@@ -1,0 +1,20 @@
+{
+  "author"      : "Jordan Running <jr@jordanrunning.com>",
+  "name"        : "roller",
+  "description" : "Disregard determinism; acquire entropy.",
+  "version"     : "0.0.1",
+  "repository"  : {
+    "type"  : "git",
+    "url"   : "git://github.com/jrunning/node-roller.git"
+  },
+  "main"    : "app/index",
+  "engines" : {
+    "node" : "~0.6.6"
+  },
+  "dependencies" : {
+    "connect" : "~1.8.3",
+    "quip"    : "~0.0.2",
+    "roll"    : "~0.3.1"
+  },
+  "devDependencies" : {}
+}
