@@ -11,18 +11,21 @@ Usage
 
 Basic usage:
 
-    $ curl http://4d6+1.roller.local:2020/
-    12
+````sh
+$ curl http://4d6+1.roller.local:2020/
+12
+````
 
 JSON output:
 
-    $ curl -H "Content-Type: application/json" http://4d6+1.roller.local:2020/
+````sh
+$ curl -H "Content-Type: application/json" http://4d6+1.roller.local:2020/
 
-    # or
+# or
 
-    $ curl http://4d6+1.json.roller.local:2020/
-    {"input":{"quantity":"4","sides":"6","transformations":["sum",["add","1"]]},"calculations":[18,17,[4,5,3,5]],"rolled":[4,5,3,5],"result":18}
-
+$ curl http://4d6+1.json.roller.local:2020/
+{"input":{"quantity":"4","sides":"6","transformations":["sum",["add","1"]]},"calculations":[18,17,[4,5,3,5]],"rolled":[4,5,3,5],"result":18}
+````
 
 Todo
 ----
