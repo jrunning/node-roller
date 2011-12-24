@@ -2,49 +2,73 @@ var connect   = require('connect')
   , quip      = require('quip')
   , dice      = require('roll/lib/index.js')
   , hostname  = 'roller.local'
-
-    // get the expression for the dice to roll from the subdomain,
-    // e.g. 2d6+1.roller.local
-  , getDieExpr  = function(req, host) {
-      var regexp    = new RegExp('^(.*?)' + host + '$')
-        , hostname  = req.headers.host.split(':')[0]
-        , subdomains
-      ;
-
-      if ( subdomains = regexp.exec(hostname) ) {
-        return subdomains[0].split('.')[0];
-      }
-
-      return;
-    }
 ;
 
 connect(
   connect.favicon()
 , quip()
+  // TODO: Pull middleware out into their own modules
+
+  // pull dice (e.g. 3d6+2) and response type (e.g. json) "parameters"
+  // out of hostname and store in req object
 , function(req, res, next) {
-    var dieExpr, rolled;
+      var regexp    = new RegExp('^(.*?)(\.(json)\.)?' + hostname + '$')
+        , reqHostname  = req.headers.host.split(':')[0]
+        , hostnameMatch
+      ;
 
-    // respond with text/plain by default
-    res = res.plain();
-    
-    if (dieExpr = getDieExpr(req, hostname)) {
+      if ( hostnameMatch = regexp.exec(reqHostname) ) {
+        req.dieExpr = hostnameMatch[1].split('.')[0];
+
+        req.isJson = hostnameMatch[2];
+      }
+
+      next();
+  }
+
+  // assign req.isJson based on hostname parameter or Content-Type header
+, function(req, res, next) {
+    var reqContentType = req.headers['content-type'] || '';
+
+    if  ( req.isJson || -1 !== reqContentType.indexOf('json') ) {
+      req.isJson = true;
+    }
+
+    next();
+  }
+
+  // roll requested dice (if any) and store the result in the res object
+, function(req, res, next) {
+    if ( req.dieExpr ) {
       try {
-        rolled = dice.roll(dieExpr);
+        res.dice = dice.roll(req.dieExpr);
 
-        res.ok( rolled.result + "\n" );
+        next();
       }
       catch (err) {
-        // roll doesn't have very good error handling
+        // 'roll' doesn't have very good error handling :(
         if (err instanceof TypeError) {
-          res.badRequest(err.message + "\n");
+          console.error(err);
+
+          res.badRequest();
         } else {
           throw err;
         }
       }
     } else {
       // no die expr. given--help?
-      res.ok("usage: ...\n");
+      res.ok( "usage: ...\n" );
+    }
+  }
+, function(req, res, next) {
+    if ( res.dice.result ) {
+      if ( req.isJson ) {
+        res.json( res.dice );
+      } else {
+        res.plain( '' + res.dice.result );
+      }
+    } else {
+      res.error('Something went wrong.')
     }
   }
 ).listen(2020);
